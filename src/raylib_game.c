@@ -14,6 +14,7 @@ typedef struct
 {
     Rectangle rect; // x y w h
     float speed;
+    int score;
 } Paddle;
 
 
@@ -24,8 +25,8 @@ int main(void)
     // 1. 초기화 (Initialization)
     const int screenWidth = 800;
     const int screenHeight = 450;
-    
-    InitWindow(screenWidth, screenHeight, "Pong Step 3. Code Refactoring & player2 added");
+  
+    InitWindow(screenWidth, screenHeight, "Pong Step 4. Scoring");
     SetTargetFPS(60); 
 
     Ball ball = {
@@ -44,6 +45,9 @@ int main(void)
         .speed = 420.0f
     };
 
+    player1.score = 0;
+    player2.score = 0;
+
     // 2. 게임 루프
     while (!WindowShouldClose())
     {
@@ -58,7 +62,6 @@ int main(void)
         if (IsKeyDown(KEY_UP)) player2.rect.y -= player2.speed * dt;
 
         // 공 벽 충돌 처리
-        if ((ball.position.x + ball.radius >= screenWidth) || (ball.position.x - ball.radius <= 0)) ball.speed.x *= -1.0f;
         if ((ball.position.y + ball.radius >= screenHeight) || (ball.position.y - ball.radius <= 0)) ball.speed.y *= -1.0f;
 
         // 패들 벽 충돌 처리
@@ -91,14 +94,42 @@ int main(void)
             ball.speed.y *= 1.035f;
         } 
 
+        //Scoring Condition and State Reset
+        if(ball.position.x < 0) 
+        {
+            player2.score += 1;
+            ball.position = (Vector2){screenWidth / 2.0f, screenHeight / 2.0f};
+            WaitTime(0.1);
+            ball.speed = (Vector2){300.0f, 300.0f};
+        }
+
+        if(ball.position.x > screenWidth) 
+        {
+            player1.score += 1;
+            ball.position = (Vector2){screenWidth / 2.0f, screenHeight / 2.0f};
+            WaitTime(0.1);
+            ball.speed = (Vector2){-300.0f, 300.0f};
+        }
+
+
         // --- Draw ---
         BeginDrawing();
             ClearBackground(BLACK);
+
             DrawCircle((int)ball.position.x, (int)ball.position.y, ball.radius, RAYWHITE);
-            DrawText(TextFormat("BallPos: (%.0f, %.0f)", ball.position.x, ball.position.y), 10, 10, 20, GREEN);
-            DrawRectangle((int)player1.rect.x, (int)player1.rect.y, (int)player1.rect.width, (int)player1.rect.height, WHITE);
-            DrawRectangle((int)player2.rect.x, (int)player2.rect.y, (int)player2.rect.width, (int)player2.rect.height, WHITE);
-            DrawFPS(10, 30);
+
+            DrawRectangleRec(player1.rect, WHITE);
+            DrawRectangleRec(player2.rect, WHITE);
+
+            if((int)GetTime() < 10.0){ //for some reason, gettime starts from 5
+                DrawText("W/S", (int)player1.rect.x-30, screenHeight-100, 40, RAYWHITE);
+                DrawText("^/v", (int)player2.rect.x-30, screenHeight-100, 40, RAYWHITE);
+            }
+
+
+            DrawText(TextFormat("%d", player1.score), player1.rect.x, 10, 40, RAYWHITE);
+            DrawText(TextFormat("%d", player2.score), player2.rect.x, 10, 40, RAYWHITE);
+
 
         EndDrawing();
     }
