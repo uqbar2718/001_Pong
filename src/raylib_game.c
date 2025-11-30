@@ -1,6 +1,23 @@
 #include "raylib.h"
 #include "math.h"
 
+// --- 구조체 정의 : 공 ---
+typedef struct 
+{
+    Vector2 position;
+    Vector2 speed;
+    float radius;
+} Ball;
+
+// --- 구조체 정의 : 채 ---
+typedef struct
+{
+    Rectangle rect; // x y w h
+    float speed;
+} Paddle;
+
+
+
 
 int main(void)
 {
@@ -8,62 +25,79 @@ int main(void)
     const int screenWidth = 800;
     const int screenHeight = 450;
     
-    InitWindow(screenWidth, screenHeight, "Pong Step 2.5: Small Improvements");
+    InitWindow(screenWidth, screenHeight, "Pong Step 3. Code Refactoring & player2 added");
     SetTargetFPS(60); 
 
-    // --- 구조체 추가 : 공 ---
+    Ball ball = {
+        .position = {screenWidth / 2.0f, screenHeight / 2.0f},
+        .speed = {300.0f, 300.0f},
+        .radius = screenWidth / 40.0f
+    };
 
+    Paddle player1 = {
+        .rect = { screenWidth/10.0f, screenHeight/2.0f - screenHeight/9.0f, screenWidth/40.0f ,screenHeight/4.5f},
+        .speed = 420.0f
+    };
 
-    float ballX = screenWidth / 2.0f;
-    float ballY = screenHeight / 2.0f;
-    float ballSpeedX = 300.0f;
-    float ballSpeedY = 300.0f;
-    float ballRadius = screenWidth / 40.0f;
-
-    // 패들 상태변수
-    float rectHeight = screenHeight/4.5f;
-    float rectWidth = screenWidth/40.0f;
-    float rectX = screenWidth/10.0f;
-    float rectY = screenHeight/2.0f - rectHeight/2.0f;
-    float rectSpeed = 420.0f;
+    Paddle player2 = {
+        .rect = { screenWidth - screenWidth/10.0f, screenHeight/2.0f - screenHeight/9.0f, screenWidth/40.0f ,screenHeight/4.5f},
+        .speed = 420.0f
+    };
 
     // 2. 게임 루프
     while (!WindowShouldClose())
     {
         // -- Update -- Change: Delta Time implemented
         float dt = GetFrameTime();
-        ballX += ballSpeedX * dt;
-        ballY += ballSpeedY * dt;
-        if (IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S)) rectY += rectSpeed * dt;
-        if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)) rectY -= rectSpeed * dt;
-       
+        ball.position.x += ball.speed.x * dt;
+        ball.position.y += ball.speed.y * dt;
+        if (IsKeyDown(KEY_S)) player1.rect.y += player1.speed * dt;
+        if (IsKeyDown(KEY_W)) player1.rect.y -= player1.speed * dt;
+
+        if (IsKeyDown(KEY_DOWN)) player2.rect.y += player2.speed * dt;
+        if (IsKeyDown(KEY_UP)) player2.rect.y -= player2.speed * dt;
 
         // 공 벽 충돌 처리
-        if ((ballX + ballRadius >= screenWidth) || (ballX - ballRadius <= 0)) ballSpeedX *= -1.0f;
-        if ((ballY + ballRadius >= screenHeight) || (ballY - ballRadius <= 0)) ballSpeedY *= -1.0f;
+        if ((ball.position.x + ball.radius >= screenWidth) || (ball.position.x - ball.radius <= 0)) ball.speed.x *= -1.0f;
+        if ((ball.position.y + ball.radius >= screenHeight) || (ball.position.y - ball.radius <= 0)) ball.speed.y *= -1.0f;
 
         // 패들 벽 충돌 처리
-        if (rectY >= screenHeight - rectHeight ) rectY = screenHeight - rectHeight;
-        if (rectY <= 0.0f) rectY = 0.0f;
+        if (player1.rect.y >= screenHeight - player1.rect.height ) player1.rect.y = screenHeight - player1.rect.height;
+        if (player1.rect.y <= 0.0f) player1.rect.y = 0.0f;
+
+        if (player2.rect.y >= screenHeight - player2.rect.height ) player2.rect.y = screenHeight - player2.rect.height;
+        if (player2.rect.y <= 0.0f) player2.rect.y = 0.0f;
 
         // 패들 공 충돌 처리
-        // only consider ball coming from left side
-        if (CheckCollisionCircleRec((Vector2){ballX, ballY}, ballRadius, (Rectangle){rectX, rectY, rectWidth, rectHeight}) &&
-            ballSpeedX < 0)
+        // only consider ball coming from right side for player1
+        if (CheckCollisionCircleRec(ball.position, ball.radius, player1.rect) &&
+            ball.speed.x < 0)
         {
-            ballSpeedX *= -1.0f;
+            ball.speed.x *= -1.0f;
 
             // for excitement, increase ball speed by 7% every collision
-            ballSpeedX *= 1.035f;
-            ballSpeedY *= 1.035f;
+            ball.speed.x *= 1.035f;
+            ball.speed.y *= 1.035f;
         }    
+
+        // only consider ball coming from left side for player2
+        if (CheckCollisionCircleRec(ball.position, ball.radius, player2.rect) &&
+            ball.speed.x > 0)
+        {
+            ball.speed.x *= -1.0f;
+
+            // for excitement, increase ball speed by 7% every collision
+            ball.speed.x *= 1.035f;
+            ball.speed.y *= 1.035f;
+        } 
 
         // --- Draw ---
         BeginDrawing();
             ClearBackground(BLACK);
-            DrawCircle((int)ballX, (int)ballY, ballRadius, RAYWHITE);
-            DrawText(TextFormat("BallPos: (%.0f, %.0f)", ballX, ballY), 10, 10, 20, GREEN);
-            DrawRectangle((int)rectX, (int)rectY, (int)rectWidth, (int)rectHeight, WHITE);
+            DrawCircle((int)ball.position.x, (int)ball.position.y, ball.radius, RAYWHITE);
+            DrawText(TextFormat("BallPos: (%.0f, %.0f)", ball.position.x, ball.position.y), 10, 10, 20, GREEN);
+            DrawRectangle((int)player1.rect.x, (int)player1.rect.y, (int)player1.rect.width, (int)player1.rect.height, WHITE);
+            DrawRectangle((int)player2.rect.x, (int)player2.rect.y, (int)player2.rect.width, (int)player2.rect.height, WHITE);
             DrawFPS(10, 30);
 
         EndDrawing();
