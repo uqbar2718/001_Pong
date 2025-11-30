@@ -20,11 +20,8 @@ int main(void)
     // 패들 상태변수
     float rectHeight = 100.0f;
     float rectWidth = 20.0f;
-    
     float rectX = screenWidth/10.0f;
     float rectY = screenHeight/2.0f - rectHeight/2.0f;
-    
-    
     float rectSpeed = 7.0f;
 
     // 2. 게임 루프
