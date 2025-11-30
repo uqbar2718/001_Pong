@@ -1,37 +1,41 @@
 #include "raylib.h"
 #include "math.h"
 
+
 int main(void)
 {
     // 1. 초기화 (Initialization)
     const int screenWidth = 800;
     const int screenHeight = 450;
     
-    InitWindow(screenWidth, screenHeight, "Pong Step 2: A Paddle Added");
+    InitWindow(screenWidth, screenHeight, "Pong Step 2.5: Small Improvements");
     SetTargetFPS(60); 
 
-    // --- 공의 상태 변수 ---
+    // --- 구조체 추가 : 공 ---
+
+
     float ballX = screenWidth / 2.0f;
     float ballY = screenHeight / 2.0f;
-    float ballSpeedX = 5.0f;
-    float ballSpeedY = 5.0f;
-    float ballRadius = 20.0f;
+    float ballSpeedX = 300.0f;
+    float ballSpeedY = 300.0f;
+    float ballRadius = screenWidth / 40.0f;
 
     // 패들 상태변수
-    float rectHeight = 100.0f;
-    float rectWidth = 20.0f;
+    float rectHeight = screenHeight/4.5f;
+    float rectWidth = screenWidth/40.0f;
     float rectX = screenWidth/10.0f;
     float rectY = screenHeight/2.0f - rectHeight/2.0f;
-    float rectSpeed = 7.0f;
+    float rectSpeed = 420.0f;
 
     // 2. 게임 루프
     while (!WindowShouldClose())
     {
-        // --- Update ---
-        ballX += ballSpeedX;
-        ballY += ballSpeedY;
-        if (IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S)) rectY += rectSpeed;
-        if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)) rectY -= rectSpeed;
+        // -- Update -- Change: Delta Time implemented
+        float dt = GetFrameTime();
+        ballX += ballSpeedX * dt;
+        ballY += ballSpeedY * dt;
+        if (IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S)) rectY += rectSpeed * dt;
+        if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)) rectY -= rectSpeed * dt;
        
 
         // 공 벽 충돌 처리
@@ -58,11 +62,10 @@ int main(void)
         BeginDrawing();
             ClearBackground(BLACK);
             DrawCircle((int)ballX, (int)ballY, ballRadius, RAYWHITE);
-            DrawText(TextFormat("Pos: (%.0f, %.0f)", ballX, ballY), 10, 10, 20, GREEN);
-            DrawText(TextFormat("BallSpd (%.3f)", (float)sqrt((pow(ballSpeedX,2) + pow(ballSpeedY,2)))), 10, 30, 20, YELLOW);
-            DrawText(TextFormat("BallSpd (%.3f, %.3f)", ballSpeedX, ballSpeedY), 10, 50, 20, MAGENTA);
-
+            DrawText(TextFormat("BallPos: (%.0f, %.0f)", ballX, ballY), 10, 10, 20, GREEN);
             DrawRectangle((int)rectX, (int)rectY, (int)rectWidth, (int)rectHeight, WHITE);
+            DrawFPS(10, 30);
+
         EndDrawing();
     }
 
