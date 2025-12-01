@@ -1,3 +1,27 @@
+// # TODO 
+// ## 1.물리법칙 개선 --
+// - 패들 가속도 추가 - 길게 누를수록 패들 가속
+// - 공과 패들간 마찰 영향 구현 - 공과 패들 충돌시 패들 속도가 반사 후 공 진행 방향에 영향
+
+// # 2.메뉴화면, 설정 및 기능 추가 --
+// ## 메인메뉴 설정메뉴 추가
+// 메인메뉴
+//     게임시작
+//         PVP
+//             Shoulder2Shoulder
+//             LAN
+//             Online
+//         PVE
+//             난이도
+//     설정
+//             볼륨
+//             해상도
+//     종료
+
+// ## 승패선언
+//    PVP - 3세트2선승, 1세트5점제,듀스존재
+//    PVE 의 경우 승리 조건 개인화 가능
+
 #include "raylib.h"
 #include "math.h"
 
@@ -26,7 +50,7 @@ int main(void)
     const int screenWidth = 800;
     const int screenHeight = 450;
   
-    InitWindow(screenWidth, screenHeight, "Pong Step 4. Scoring");
+    InitWindow(screenWidth, screenHeight, "Pong Step 4.5 small tweaks");
     SetTargetFPS(60); 
 
     Ball ball = {
@@ -95,20 +119,30 @@ int main(void)
         } 
 
         //Scoring Condition and State Reset
-        if(ball.position.x < 0) 
+        if(ball.position.x < 0) //player2 win, next serve to player1
         {
             player2.score += 1;
             ball.position = (Vector2){screenWidth / 2.0f, screenHeight / 2.0f};
             WaitTime(0.1);
-            ball.speed = (Vector2){300.0f, 300.0f};
+            ball.speed = (Vector2){-300.0f, 300.0f};
+
+            // initalize position
+            player1.rect = (Rectangle){ screenWidth/10.0f, screenHeight/2.0f - screenHeight/9.0f, screenWidth/40.0f ,screenHeight/4.5f};
+            player2.rect = (Rectangle){ screenWidth - screenWidth/10.0f, screenHeight/2.0f - screenHeight/9.0f, screenWidth/40.0f ,screenHeight/4.5f};
+
+            
         }
 
-        if(ball.position.x > screenWidth) 
+        if(ball.position.x > screenWidth) //player1 win, next serve to player1
         {
-            player1.score += 1;
+            player1.score += 1; 
             ball.position = (Vector2){screenWidth / 2.0f, screenHeight / 2.0f};
             WaitTime(0.1);
-            ball.speed = (Vector2){-300.0f, 300.0f};
+            ball.speed = (Vector2){300.0f, 300.0f};
+
+            // initalize position
+            player1.rect = (Rectangle){ screenWidth/10.0f, screenHeight/2.0f - screenHeight/9.0f, screenWidth/40.0f ,screenHeight/4.5f};
+            player2.rect = (Rectangle){ screenWidth - screenWidth/10.0f, screenHeight/2.0f - screenHeight/9.0f, screenWidth/40.0f ,screenHeight/4.5f};
         }
 
 
@@ -121,12 +155,12 @@ int main(void)
             DrawRectangleRec(player1.rect, WHITE);
             DrawRectangleRec(player2.rect, WHITE);
 
-            if((int)GetTime() < 10.0){ //for some reason, gettime starts from 5
+            if(GetTime() < 8.5f){ //for some reason, gettime starts from 5
                 DrawText("W/S", (int)player1.rect.x-30, screenHeight-100, 40, RAYWHITE);
                 DrawText("^/v", (int)player2.rect.x-30, screenHeight-100, 40, RAYWHITE);
             }
 
-
+            DrawText(TextFormat("%f", GetTime()), 10, 30, 40, GREEN);
             DrawText(TextFormat("%d", player1.score), player1.rect.x, 10, 40, RAYWHITE);
             DrawText(TextFormat("%d", player2.score), player2.rect.x, 10, 40, RAYWHITE);
 
